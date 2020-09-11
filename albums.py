@@ -36,12 +36,12 @@ def find(artist):
     albums = session.query(Album).filter(sa.func.lower(Album.artist) == artist.lower()).all()
     return albums
 
-def find_saved(album):
+def find_saved(album, artist):
     """
-    Находит первую запись в таблице album, у которой поле .album соответствует искомому
+    Находит первую запись в таблице album, у которой поля .album и .artist соответствуют аргументам функции
     """
     session = connect_db()
-    alb = session.query(Album).filter(sa.func.lower(Album.album) == album.lower()).first()
+    alb = session.query(Album).filter((sa.func.lower(Album.album) == album.lower()) & (sa.func.lower(Album.artist) == artist.lower())).first()
     return alb 
 
 def valid_str(s): 
@@ -81,9 +81,9 @@ def check_data(album_data):
         message = f"Необходимо заполнить поле 'Жанр альбома' (не используйте спецсимволы). Попробуйте ещё раз!"
         result = HTTPError(400, message) 
     else:
-        album_name = find_saved(album_data["album"])
+        album_name = find_saved(album_data["album"], album_data["artist"])
         if album_name:
-            message = f"Такой альбом ({album_name.album}) уже есть в базе. Попробуйте ещё раз!"
+            message = f"Такой альбом ({album_name.album}) исполнителя {album_name.artist} уже есть в базе. Попробуйте ещё раз!"
             result = HTTPError(400, message)
         else: 
             first_year = 1940 
